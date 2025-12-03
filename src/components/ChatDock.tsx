@@ -64,6 +64,9 @@ export default function ChatDock() {
     } catch {}
   };
 
+  // Backend API URL - use environment variable or default to localhost
+  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://127.0.0.1:8000';
+
   // ---- core send ----
   const sendMessage = async (forced?: string) => {
     const text = (forced ?? input).trim();
@@ -74,12 +77,13 @@ export default function ChatDock() {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      // Call backend API directly with correct format
+      const res = await fetch(`${BACKEND_URL}/v1/incoming-user-prompt`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: text,
-          sessionId,
+          query: text,
+          session_id: sessionId || undefined,
         }),
       });
 
@@ -96,16 +100,13 @@ export default function ChatDock() {
         return;
       }
 
-      if (data?.sessionId) {
-        setSessionId(data.sessionId);
+      // Backend returns session_id (snake_case)
+      if (data?.session_id) {
+        setSessionId(data.session_id);
       }
 
-      const reply: string =
-        data?.reply ??
-        data?.generated_text ??
-        data?.answer ??
-        data?.content ??
-        'No response received.';
+      // Backend returns generated_text
+      const reply: string = data?.generated_text || 'No response received.';
 
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       speak(reply);

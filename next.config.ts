@@ -1,14 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig = {
-  async rewrites() {
-    return [
-      {
-        source: "/api/chat",
-        destination: "http://127.0.0.1:8000/incoming-user-prompt",
-      },
-    ];
-  },
+  // Removed rewrites - frontend now calls backend API directly
+  // Backend URL is configured via NEXT_PUBLIC_BACKEND_URL environment variable
 };
 
 export default nextConfig;
